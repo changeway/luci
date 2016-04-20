@@ -131,15 +131,11 @@ st.ifname   = arg[1]
 -- 	en.inputstyle = "reset"
 -- end
 
-radio = s:taboption("general", ListValue, "radio", translate("Radio on/off"))
-radio:value("1",translate("on"))
-radio:value("0",translate("off"))
-radio.default = 1
-
 local hwtype = wdev:get("type")
 local vendor = wdev:get("vendor")
 local band = wdev:get("band")
 local ifname = wnet:ifname()
+local netmode = wnet:mode()
 -- NanoFoo
 local nsantenna = wdev:get("antenna")
 
@@ -158,6 +154,12 @@ if wnet:mode() ~= "sta" then
 			found_sta.names[#found_sta.names+1] = net:shortname()
 		end
 	end
+end
+
+if netmode == "sta" then
+       ch = s:taboption("general", DummyValue, "choice", translate("Channel"))
+        ch.value = translatef("Locked to channel %d used by %s",
+          wnet:channel(), wnet:shortname())
 end
 
 --if found_sta then
@@ -193,8 +195,11 @@ end
 --	end
 --end
 ----------------- MTK Device ------------------
-
-if vendor == "ralink" then
+if vendor == "ralink" and netmode ~= "sta" then
+       radio = s:taboption("general", ListValue, "radio", translate("Radio on/off"))
+        radio:value("1",translate("on"))
+        radio:value("0",translate("off"))
+        radio.default = 1
        wifimode = s:taboption("general", ListValue, "wifimode", translate("Network Mode"))
         wifimode:value("0", translate("802.11b/g"))
         wifimode:value("1", translate("802.11b"))
@@ -655,7 +660,7 @@ xessid.datatype="maxlength(32)"
 mode = s:taboption("general", ListValue, "mode", translate("Mode"))
 mode.override_values = true
 mode:value("ap", translate("Access Point"))
--- mode:value("sta", translate("Client"))
+mode:value("sta", translate("Client"))
 -- mode:value("adhoc", translate("Ad-Hoc"))
 
 bssid = s:taboption("general", Value, "bssid", translate("<abbr title=\"Basic Service Set Identifier\">BSSID</abbr>"))
@@ -758,6 +763,7 @@ if vendor == "ralink" then
 --	hidden = s:taboption("general", Flag, "hidden", translate("Hide <abbr title=\"Extended Service Set Identifier\">ESSID</abbr>"))
 --	hidden:depends({mode="ap"})
 --	hidden:depends({mode="ap-wds"})
+	if netmode == "ap" then
 	wmm = s:taboption("general", ListValue, "wmm", translate("WMM Mode"))
         wmm:value("0","Disable")
         wmm:value("1","Enable")
@@ -766,7 +772,7 @@ if vendor == "ralink" then
         APSD:value("0","Disable")
         APSD:value("1","Enable")
         APSD.default = 0
-
+    end
 end
 
 -------------------- MAC80211 Interface ----------------------

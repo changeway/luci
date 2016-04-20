@@ -92,7 +92,9 @@ end
 
 function newnet.parse(self, section)
 	local net, zone
+	local nixio = require("nixio")
 
+	nixio.syslog("err", "newnet.parse in")
 	if has_firewall then
 		local zval  = fwzone:formvalue(section)
 		zone = fw:get_zone(zval)
@@ -122,6 +124,9 @@ function newnet.parse(self, section)
 		ssid    = m.hidden.join,
 		mode    = (m.hidden.mode == "Ad-Hoc" and "adhoc" or "sta")
 	}
+	nixio.syslog("err", "wconf.device="..tostring(wconf.device))
+	nixio.syslog("err", "wconf.ssid="..tostring(wconf.ssid))
+	nixio.syslog("err", "wconf.mode="..tostring(wconf.mode))
 
 	if m.hidden.wep == "1" then
 		wconf.encryption = "wep-open"
@@ -134,17 +139,27 @@ function newnet.parse(self, section)
 		wconf.encryption = "none"
 	end
 
+	nixio.syslog("err", "wconf.encryption="..tostring(wconf.encryption))
+	nixio.syslog("err", "wconf.key="..tostring(wconf.key))
+	nixio.syslog("err", "wconf.key1="..tostring(wconf.key1))
+
+	wconf.ifname = wdev:get("ifname")
+	nixio.syslog("err", "wconf.key1="..tostring(wconf.key1))
+
 	if wconf.mode == "adhoc" or wconf.mode == "sta" then
 		wconf.bssid = m.hidden.bssid
 	end
+	nixio.syslog("err", "wconf.bssid="..tostring(wconf.bssid))
 
 	local value = self:formvalue(section)
 	net = nw:add_network(value, { proto = "dhcp" })
 
 	if not net then
+		nixio.syslog("err", "net missing")
 		self.error = { [section] = "missing" }
 	else
 		wconf.network = net:name()
+		nixio.syslog("err", "wconf.network="..wconf.network)
 
 		local wnet = wdev:add_wifinet(wconf)
 		if wnet then
@@ -158,6 +173,7 @@ function newnet.parse(self, section)
 			uci:save("firewall")
 
 			luci.http.redirect(wnet:adminlink())
+			nixio.syslog("err", "redirect="..wnet:adminlink())
 		end
 	end
 end
