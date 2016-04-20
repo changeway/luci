@@ -134,6 +134,7 @@ st.ifname   = arg[1]
 local hwtype = wdev:get("type")
 local vendor = wdev:get("vendor")
 local band = wdev:get("band")
+local dev_wifimode = wdev:get("wifimode")
 local ifname = wnet:ifname()
 local netmode = wnet:mode()
 -- NanoFoo
@@ -1007,8 +1008,10 @@ cipher:depends({encryption="wpa-mixed"})
 cipher:depends({encryption="psk-mixed"})
 -- cipher:value("auto", translate("auto"))
 cipher:value("ccmp", translate("Force CCMP (AES)"))
+if dev_wifimode ~= "15" then
 cipher:value("tkip", translate("Force TKIP"))
 cipher:value("tkip+ccmp", translate("Force TKIP and CCMP (AES)"))
+end
 
 function encr.cfgvalue(self, section)
 	local v = tostring(ListValue.cfgvalue(self, section))
